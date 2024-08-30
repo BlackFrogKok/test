@@ -4638,10 +4638,20 @@ void PrintConfigDef::init_fff_params()
     def->category = L("Support");
     def->tooltip = L("Support will be generated for overhangs whose slope angle is below the threshold.");
     def->sidetext = L("°");
-    def->min = 1;
+    def->min = 0;
     def->max = 90;
     def->mode = comSimple;
     def->set_default_value(new ConfigOptionInt(30));
+
+    def = this->add("support_threshold_offset", coPercent);
+    def->label = L("Threshold offset");
+    def->category = L("Support");
+    def->tooltip = L("Support will be generated for overhangs whose offset is above the threshold.");
+    def->sidetext = L("%");
+    def->min = 0;
+    def->max = 100;
+    def->mode = comSimple;
+    def->set_default_value(new ConfigOptionPercent(50));
 
     def = this->add("tree_support_branch_angle", coFloat);
     def->label = L("Tree support branch angle");

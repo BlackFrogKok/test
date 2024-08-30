@@ -800,6 +800,7 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionEnum<InternalBridgeFilter>,  dont_filter_internal_bridges))
     // Overhang angle threshold.
     ((ConfigOptionInt,                 support_threshold_angle))
+    ((ConfigOptionPercent,             support_threshold_offset))
     ((ConfigOptionFloat,               support_object_xy_distance))
     ((ConfigOptionFloat,               xy_hole_compensation))
     ((ConfigOptionFloat,               xy_contour_compensation))
