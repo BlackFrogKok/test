@@ -1595,7 +1595,12 @@ static inline ExPolygons detect_overhangs(
             // Extrusion width accounts for the roundings of the extrudates.
             // It is the maximum widh of the extrudate.
             float fw = float(layerm->flow(frExternalPerimeter).scaled_width());
-            lower_layer_offset  = 
+
+            auto ufw = unscale_(fw);
+            auto abs = object_config.support_threshold_overlap.get_abs_value(ufw);
+            auto sc  = scale_(abs);
+
+            lower_layer_offset  =
                 (layer_id < (size_t)object_config.enforce_support_layers.value) ? 
                     // Enforce a full possible support, ignore the overhang angle.
                     0.f :
@@ -1603,7 +1608,7 @@ static inline ExPolygons detect_overhangs(
                     // Overhang defined by an angle.
                     float(scale_(lower_layer.height / tan(threshold_rad))) :
                     // Overhang defined by percent of the extrusion width.
-                    object_config.support_threshold_offset.value/100.f * fw);
+                    fw - float(scale_(object_config.support_threshold_overlap.get_abs_value(unscale_(fw)))));
             // Overhang polygons for this layer and region.
             Polygons diff_polygons;
             Polygons layerm_polygons = to_polygons(layerm->slices.surfaces);
