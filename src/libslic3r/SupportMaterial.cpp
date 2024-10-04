@@ -1,3 +1,4 @@
+#pragma optimize("", off)
 #include "ClipperUtils.hpp"
 #include "ExtrusionEntity.hpp"
 #include "ExtrusionEntityCollection.hpp"
@@ -1594,15 +1595,20 @@ static inline ExPolygons detect_overhangs(
             // Extrusion width accounts for the roundings of the extrudates.
             // It is the maximum widh of the extrudate.
             float fw = float(layerm->flow(frExternalPerimeter).scaled_width());
-            lower_layer_offset  = 
+
+            auto ufw = unscale_(fw);
+            auto abs = object_config.support_threshold_overlap.get_abs_value(ufw);
+            auto sc  = scale_(abs);
+
+            lower_layer_offset  =
                 (layer_id < (size_t)object_config.enforce_support_layers.value) ? 
                     // Enforce a full possible support, ignore the overhang angle.
                     0.f :
                 (threshold_rad > 0. ? 
                     // Overhang defined by an angle.
                     float(scale_(lower_layer.height / tan(threshold_rad))) :
-                    // Overhang defined by half the extrusion width.
-                    0.5f * fw);
+                    // Overhang defined by percent of the extrusion width.
+                    fw - float(scale_(object_config.support_threshold_overlap.get_abs_value(unscale_(fw)))));
             // Overhang polygons for this layer and region.
             Polygons diff_polygons;
             Polygons layerm_polygons = to_polygons(layerm->slices.surfaces);
