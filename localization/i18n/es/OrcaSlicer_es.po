@@ -14061,9 +14061,6 @@ msgstr "Patrón de base"
 msgid "Line pattern of support"
 msgstr "Patrón de líneas de soportes"
 
-msgid "Rectilinear grid"
-msgstr "Rejilla rectilínea"
-
 msgid "Hollow"
 msgstr "Hueco"
 
@@ -14078,9 +14075,6 @@ msgstr ""
 "Patrón de líneas de la interfaz de soporte. El patrón por defecto para la "
 "interfaz de soporte no soluble es Rectilíneo, mientras que el patrón por "
 "defecto para la interfaz de soporte soluble es Concéntrico"
-
-msgid "Rectilinear Interlaced"
-msgstr "Entrelazado rectilíneo"
 
 msgid "Base pattern spacing"
 msgstr "Espaciado del patrón base"
