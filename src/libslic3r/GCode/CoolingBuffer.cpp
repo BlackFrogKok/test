@@ -687,11 +687,12 @@ std::string CoolingBuffer::apply_layer_cooldown(
     new_gcode.reserve(gcode.size() * 2);
     bool overhang_fan_control= false;
     int  overhang_fan_speed   = 0;
+    int  overhang_fan_speed_max = 0;
     int  overhang_fan_threshold = 0;
     int  bridge_fan_speed       = 0;
     bool supp_interface_fan_control= false;
     int  supp_interface_fan_speed = 0;
-    auto change_extruder_set_fan = [ this, layer_id, layer_time, &new_gcode, &overhang_fan_control, &overhang_fan_threshold, &overhang_fan_speed, &bridge_fan_speed, &supp_interface_fan_control, &supp_interface_fan_speed](bool immediately_apply) {
+    auto change_extruder_set_fan = [ this, layer_id, layer_time, &new_gcode, &overhang_fan_control, &overhang_fan_threshold, &overhang_fan_speed, &overhang_fan_speed_max, &bridge_fan_speed, &supp_interface_fan_control, &supp_interface_fan_speed](bool immediately_apply) {
 #define EXTRUDER_CONFIG(OPT) m_config.OPT.get_at(m_current_extruder)
         float fan_min_speed = EXTRUDER_CONFIG(fan_min_speed);
         float fan_speed_new = EXTRUDER_CONFIG(reduce_fan_stop_start_freq) ? fan_min_speed : 0;
@@ -751,12 +752,14 @@ std::string CoolingBuffer::apply_layer_cooldown(
                 }
             //}
             overhang_fan_speed   = EXTRUDER_CONFIG(overhang_fan_speed);
+            overhang_fan_speed_max = EXTRUDER_CONFIG(overhang_fan_speed_max);
             bridge_fan_speed     = EXTRUDER_CONFIG(bridge_fan_speed);
             if (int(layer_id) >= close_fan_the_first_x_layers && int(layer_id) + 1 < full_fan_speed_layer) {
                 // Ramp up the fan speed from close_fan_the_first_x_layers to full_fan_speed_layer.
                 float factor = float(int(layer_id + 1) - close_fan_the_first_x_layers) / float(full_fan_speed_layer - close_fan_the_first_x_layers);
                 fan_speed_new    = std::clamp(int(float(fan_speed_new) * factor + 0.5f), 0, 255);
                 overhang_fan_speed = std::clamp(int(float(overhang_fan_speed) * factor + 0.5f), 0, 255);
+                overhang_fan_speed_max = std::clamp(int(float(overhang_fan_speed) * factor + 0.5f), 0, 255);
                 bridge_fan_speed   = std::clamp(int(float(bridge_fan_speed)   * factor + 0.5f), 0, 255);
             }
             supp_interface_fan_speed = EXTRUDER_CONFIG(support_material_interface_fan_speed);
@@ -767,6 +770,7 @@ std::string CoolingBuffer::apply_layer_cooldown(
         } else {
             overhang_fan_control= false;
             overhang_fan_speed   = 0;
+            overhang_fan_speed_max = 0;
             bridge_fan_speed     = 0;
             fan_speed_new      = 0;
             additional_fan_speed_new = 0;
@@ -930,10 +934,12 @@ std::string CoolingBuffer::apply_layer_cooldown(
         if (need_set_fan) {
             if (fan_speed_change_requests[CoolingLine::TYPE_OVERHANG_FAN_START]){
                 int fan_speed = overhang_fan_speed;
-                if (line->overhang_degree >= overhang_fan_threshold && bridge_fan_speed > overhang_fan_speed) {
-                    fan_speed = overhang_fan_speed + (bridge_fan_speed - overhang_fan_speed)*(line->overhang_degree - overhang_fan_threshold)/(100-overhang_fan_threshold);
+                if (line->overhang_degree >= overhang_fan_threshold && overhang_fan_speed_max > overhang_fan_speed) {
+                    fan_speed = overhang_fan_speed + (overhang_fan_speed_max - overhang_fan_speed)*(line->overhang_degree - overhang_fan_threshold)/(100-overhang_fan_threshold);
                     fan_speed = std::round(fan_speed / 10.f) * 10;
                 }
+                if (line->overhang_degree < 0)
+                    fan_speed = bridge_fan_speed;
                 if (m_current_fan_speed != fan_speed)
                 {
                     new_gcode += GCodeWriter::set_fan(m_config.gcode_flavor, fan_speed);

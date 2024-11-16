@@ -5579,7 +5579,10 @@ std::string GCode::_extrude(const ExtrusionPath &path, std::string description, 
                         (path.get_overhang_degree() > overhang_threshold || is_bridge(path.role()))) {
                         if (is_bridge(path.role())) {
                             //Classic/Modern
-                            gcode += ";_OVERHANG_FAN_START@100\n";
+                            if (path.role() == erOverhangPerimeter)
+                                gcode += ";_OVERHANG_FAN_START@100\n";
+                            else 
+                                gcode += ";_OVERHANG_FAN_START@-1\n";
                         } else {
                             //Classic
                             int overhang_degree = 0;
@@ -5751,7 +5754,7 @@ std::string GCode::_extrude(const ExtrusionPath &path, std::string description, 
                 if (enable_overhang_bridge_fan) {
                     //Modern
                     cur_fan_enabled = check_overhang_fan(processed_point.overlap, path.role());
-                    float overlap = is_bridge(path.role()) ? 0 : std::max(std::abs(processed_point.overlap), std::abs(pre_processed_point.overlap));
+                    float overlap = is_bridge(path.role()) && path.role() != erOverhangPerimeter ? 1.01 : std::max(std::abs(processed_point.overlap), std::abs(pre_processed_point.overlap));
 
                     if (pre_fan_enabled && cur_fan_enabled) {
                         gcode += ";_OVERHANG_FAN_START@" + std::to_string(int(100 - overlap*100))+"\n";

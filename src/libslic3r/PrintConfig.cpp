@@ -857,7 +857,17 @@ void PrintConfigDef::init_fff_params()
 
     def = this->add("overhang_fan_speed", coInts);
     def->label = L("Fan speed for overhang");
-    def->tooltip = L("Force part cooling fan to be this speed when printing overhang wall which has large overhang degree. "
+    def->tooltip = L("Force part cooling fan to be this speed when printing overhang wall which is large than overhang threshold. "
+                     "Forcing cooling for overhang or external wall can get better quality for these parts");
+    def->sidetext = L("%");
+    def->min = 0;
+    def->max = 100;
+    def->mode = comAdvanced;
+    def->set_default_value(new ConfigOptionInts { 100 });
+
+    def = this->add("overhang_fan_speed_max", coInts);
+    def->label = L("Maximum fan speed for overhang");
+    def->tooltip = L("Force part cooling fan to be this speed when printing overhang wall which is about 100%. "
                      "Forcing cooling for overhang or external wall can get better quality for these parts");
     def->sidetext = L("%");
     def->min = 0;
@@ -867,7 +877,7 @@ void PrintConfigDef::init_fff_params()
 
     def = this->add("bridge_fan_speed", coInts);
     def->label = L("Fan speed for bridge");
-    def->tooltip = L("Force part cooling fan to be this speed when printing bridge. If this value is less than fan speed for overhang latter is used. "
+    def->tooltip = L("Force part cooling fan to be this speed when printing bridge. "
                      "Forcing cooling for bridge can get better quality for these parts");
     def->sidetext = L("%");
     def->min = 0;
